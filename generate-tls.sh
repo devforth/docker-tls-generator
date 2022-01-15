@@ -12,7 +12,9 @@ else
   exit -1
 fi
 function create_new_ca {
+  # Run OpenSSL to create and sign a CA key
   openssl genrsa -out ~/.docker/ca-key.pem 4096
+  # And certificate
 	openssl req -x509 -new -nodes -key ~/.docker/ca-key.pem \
 			-days $DAYS -out ~/.docker/ca.pem -subj '/CN=docker-CA'
 }
@@ -22,8 +24,13 @@ if [[ $REPLY =~ ^[Yy]$ ]]
 then
     sudo rm -rf /etc/docker/ssl && rm -rf ~/.docker && rm -rf /etc/systemd/system/docker.service.d
 fi
+
+
+# Create folder that keep our keys
 mkdir -p /etc/docker/ssl
 mkdir -p ~/.docker
+
+
 if test -f ~/.docker/ca-key.pem; then
 	read -p "We found previous versions of the Certificate Authority's. Do you want to create a new 'Certificate Authority's'? [Y/n]" -n 1 -r
 	echo
@@ -34,7 +41,11 @@ if test -f ~/.docker/ca-key.pem; then
 else
 	create_new_ca
 fi
+
+# copy the CA certificate into /etc/docker/ssl
 cp ~/.docker/ca.pem /etc/docker/ssl
+
+# create OpenSSL configuration file for the Docker client ~/.docker/openssl.cnf
 echo "[req]
 req_extensions = v3_req
 distinguished_name = req_distinguished_name
@@ -48,6 +59,8 @@ subjectAltName = @alt_names
 [alt_names]
 IP.1 = $SERVER_IP
 IP.2 = 127.0.0.1" > ~/.docker/openssl.cnf
+
+# create and sign a certificate for the client
 openssl genrsa -out ~/.docker/key.pem 4096
 openssl req -new -key ~/.docker/key.pem -out ~/.docker/cert.csr \
     -subj '/CN=docker-client' -config ~/.docker/openssl.cnf
@@ -55,6 +68,8 @@ openssl x509 -req -in ~/.docker/cert.csr -CA ~/.docker/ca.pem \
     -CAkey ~/.docker/ca-key.pem -CAcreateserial \
     -out ~/.docker/cert.pem -days $DAYS -extensions v3_req \
     -extfile ~/.docker/openssl.cnf
+
+# Also do the same for the server:
 openssl genrsa -out /etc/docker/ssl/server-key.pem 2048
 openssl req -new -key /etc/docker/ssl/server-key.pem \
     -out /etc/docker/ssl/server-cert.csr \
@@ -63,9 +78,13 @@ openssl x509 -req -in /etc/docker/ssl/server-cert.csr -CA ~/.docker/ca.pem \
     -CAkey ~/.docker/ca-key.pem -CAcreateserial \
     -out /etc/docker/ssl/server-cert.pem -days $DAYS -extensions v3_req \
     -extfile ~/.docker/openssl.cnf
+
+# set up docker for use TLS certificate
 mkdir -p /etc/systemd/system/docker.service.d/
 echo "[Service]
 ExecStart=
 ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2376 --tlsverify --tlscacert=/etc/docker/ssl/ca.pem --tlscert=/etc/docker/ssl/server-cert.pem --tlskey=/etc/docker/ssl/server-key.pem" > /etc/systemd/system/docker.service.d/override.conf
+
+# reload docker and docker-deamon
 systemctl daemon-reload
 systemctl restart docker
