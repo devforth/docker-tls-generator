@@ -12,9 +12,10 @@ else
   exit -1
 fi
 function create_new_ca {
-  # Run OpenSSL to create and sign a CA key
+  # Generating certificate authority (CA) with 4096-bit security.
   openssl genrsa -out ~/.docker/ca-key.pem 4096
-  # And certificate
+  # generating a self-signed certificate for CA
+  # X.509 is a standard that defines the format of public key certificates, with fixed size 256-bit (32-byte) hash
 	openssl req -x509 -new -nodes -key ~/.docker/ca-key.pem \
 			-days $DAYS -out ~/.docker/ca.pem -subj '/CN=docker-CA'
 }
@@ -83,7 +84,7 @@ openssl x509 -req -in /etc/docker/ssl/server-cert.csr -CA ~/.docker/ca.pem \
 mkdir -p /etc/systemd/system/docker.service.d/
 echo "[Service]
 ExecStart=
-ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2376 --tlsverify --tlscacert=/etc/docker/ssl/ca.pem --tlscert=/etc/docker/ssl/server-cert.pem --tlskey=/etc/docker/ssl/server-key.pem" > /etc/systemd/system/docker.service.d/override.conf
+ExecStart=/usr/bin/dockerd -H unix:///var/run/docker.sock -H tcp://0.0.0.0:2376 --tlsverify --tlscacert=/etc/docker/ssl/ca.pem --tlscert=/etc/docker/ssl/server-cert.pem --tlskey=/etc/docker/ssl/server-key.pem" > /etc/systemd/system/docker.service.d/override.conf
 
 # reload docker and docker-deamon
 systemctl daemon-reload
