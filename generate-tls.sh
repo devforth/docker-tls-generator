@@ -20,7 +20,7 @@ function create_new_ca {
 			-days $DAYS -out ~/.docker/ca.pem -subj '/CN=docker-CA'
 }
 
-read -p "This will remove all previous Docker TLS certificates and CA. Are you sure want to continue? [Y/n]" -n 1 -r;
+read -p "This will remove all previous Docker TLS certificates and CA. Are you sure want to continue? [Y/n]" -n 1 -r < /dev/tty;
 echo "";
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
@@ -34,7 +34,7 @@ mkdir -p ~/.docker
 
 
 if test -f ~/.docker/ca-key.pem; then
-	read -p "We found previous versions of the Certificate Authority's. Do you want to create a new 'Certificate Authority's'? [Y/n]" -n 1 -r;
+	read -p "We found previous versions of the Certificate Authority's. Do you want to create a new 'Certificate Authority's'? [Y/n]" -n 1 -r < /dev/tty;
 	echo "";
 	if [[ $REPLY =~ ^[Yy]$ ]]
 	then
