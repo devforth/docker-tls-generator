@@ -19,11 +19,15 @@ function create_new_ca {
 	openssl req -x509 -new -nodes -key ~/.docker/ca-key.pem \
 			-days $DAYS -out ~/.docker/ca.pem -subj '/CN=docker-CA'
 }
-read -p "This will remove all previous Docker TLS certificates and CA. Are you sure want to continue? [Y/n]" -n 1 -r
-echo
+
+read -p "This will remove all previous Docker TLS certificates and CA. Are you sure want to continue? [Y/n]" -n 1 -r < /dev/tty;
+echo "";
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
     sudo rm -rf /etc/docker/ssl && rm -rf ~/.docker && rm -rf /etc/systemd/system/docker.service.d
+else
+    echo "Aborting...";
+    exit -1;
 fi
 
 
@@ -33,8 +37,8 @@ mkdir -p ~/.docker
 
 
 if test -f ~/.docker/ca-key.pem; then
-	read -p "We found previous versions of the Certificate Authority's. Do you want to create a new 'Certificate Authority's'? [Y/n]" -n 1 -r
-	echo
+	read -p "We found previous versions of the Certificate Authority's. Do you want to create a new 'Certificate Authority's'? [Y/n]" -n 1 -r < /dev/tty;
+	echo "";
 	if [[ $REPLY =~ ^[Yy]$ ]]
 	then
     create_new_ca
