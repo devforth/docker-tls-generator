@@ -20,12 +20,11 @@ function create_new_ca {
 			-days $DAYS -out ~/.docker/ca.pem -subj '/CN=docker-CA'
 }
 read -p "This will remove all previous Docker TLS certificates and CA. Are you sure want to continue? [Y/n]" -n 1 -r
-echo
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
     sudo rm -rf /etc/docker/ssl && rm -rf ~/.docker && rm -rf /etc/systemd/system/docker.service.d
 fi
-
+echo
 
 # Create folder that keep our keys
 mkdir -p /etc/docker/ssl
