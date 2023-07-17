@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+AGREE_ALL=$1
 if [ "$EUID" -ne 0 ]; then
   echo "Please run as root"
   exit -1
@@ -20,9 +21,13 @@ function create_new_ca {
 			-days $DAYS -out ~/.docker/ca.pem -subj '/CN=docker-CA'
 }
 
-read -p "This will remove all previous Docker TLS certificates and CA. Are you sure want to continue? [Y/n]" -n 1 -r < /dev/tty;
-echo "";
-if [[ $REPLY =~ ^[Yy]$ ]]
+if [ $AGREE_ALL != '-y']
+then
+  read -p "This will remove all previous Docker TLS certificates and CA. Are you sure want to continue? [Y/n]" -n 1 -r < /dev/tty;
+  echo "";
+fi
+
+if [[ $REPLY =~ ^[Yy]$ || $AGREE_ALL == '-y' ]]
 then
     sudo rm -rf /etc/docker/ssl && rm -rf ~/.docker && rm -rf /etc/systemd/system/docker.service.d
 else
@@ -36,7 +41,7 @@ mkdir -p /etc/docker/ssl
 mkdir -p ~/.docker
 
 
-if test -f ~/.docker/ca-key.pem; then
+if [[ -f ~/.docker/ca-key.pem || $AGREE_ALL == '-y' ]]; then
 	read -p "We found previous versions of the Certificate Authority's. Do you want to create a new 'Certificate Authority's'? [Y/n]" -n 1 -r < /dev/tty;
 	echo "";
 	if [[ $REPLY =~ ^[Yy]$ ]]
