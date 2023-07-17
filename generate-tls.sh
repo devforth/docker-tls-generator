@@ -21,7 +21,7 @@ function create_new_ca {
 			-days $DAYS -out ~/.docker/ca.pem -subj '/CN=docker-CA'
 }
 
-if [ $AGREE_ALL != '-y']
+if [[ $AGREE_ALL != '-y' ]]]
 then
   read -p "This will remove all previous Docker TLS certificates and CA. Are you sure want to continue? [Y/n]" -n 1 -r < /dev/tty;
   echo "";
