@@ -40,7 +40,7 @@ mkdir -p /etc/docker/ssl
 mkdir -p ~/.docker
 
 
-if [[ -f ~/.docker/ca-key.pem || $AGREE_ALL == '-y' ]]; then
+if [[ -f ~/.docker/ca-key.pem && $AGREE_ALL != '-y' ]]; then
 	read -p "We found previous versions of the Certificate Authority's. Do you want to create a new 'Certificate Authority's'? [Y/n]" -n 1 -r < /dev/tty;
 	echo "";
 	if [[ $REPLY =~ ^[Yy]$ ]]
