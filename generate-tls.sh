@@ -22,10 +22,12 @@ function create_new_ca {
 }
 if [[ $AGREE_ALL != '-y' ]]
 then
-  read -p "This will remove all previous Docker TLS certificates and CA. Are you sure want to continue? [Y/n]" -n 1 -r < /dev/tty;
-  echo "";
+  read -p "This will remove all previous Docker TLS certificates and CA. Are you sure want to continue? [Y/n]" -n 1 -r < /dev/tty; # prompt user
+  echo ""; # move to a new line
+  REPLY=${REPLY:-"Y"}; # if empty, default to Y
 fi
 
+# remove all previous Docker TLS certificates and CA
 if [[ $REPLY =~ ^[Yy]$ || $AGREE_ALL == '-y' ]]
 then
     sudo rm -rf /etc/docker/ssl && rm -rf ~/.docker && rm -rf /etc/systemd/system/docker.service.d
@@ -41,8 +43,10 @@ mkdir -p ~/.docker
 
 
 if [[ -f ~/.docker/ca-key.pem && $AGREE_ALL != '-y' ]]; then
-	read -p "We found previous versions of the Certificate Authority's. Do you want to create a new 'Certificate Authority's'? [Y/n]" -n 1 -r < /dev/tty;
-	echo "";
+	read -p "We found previous versions of the Certificate Authority's. Do you want to create a new 'Certificate Authority's'? [Y/n]" -n 1 -r < /dev/tty; # prompt user
+	echo ""; # move to a new line
+  REPLY=${REPLY:-"Y"}; # if empty, default to Y
+
 	if [[ $REPLY =~ ^[Yy]$ ]]
 	then
     create_new_ca
